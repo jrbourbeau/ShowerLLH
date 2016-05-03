@@ -1,0 +1,10 @@
+# $Id: RELEASE_NOTES 86065 2012-03-07 22:56:02Z jacobi $
+# $Author: fmcnally $
+# $Date: 2012-03-07 16:56:02 -0600 (Wed, 07 Mar 2012) $
+#
+
+August 30, 2012, Frank McNally  (frank.mcnally@icecube.wisc.edu)
+--------------------------------------------------------------------
+Release V01-00-00
+- Initial Release
+  - copied from sandbox/nwhitehorn/millipede
