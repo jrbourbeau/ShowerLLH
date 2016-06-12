@@ -364,7 +364,7 @@ void ShowerLLH::Physics(I3FramePtr frame) {
   I3DoublePtr maxLLH_out(new I3Double(maxLLH));
 
   frame->Put("ShowerLLH_"+composition_, track);
-
+  std::cout << "Running..." << std::endl;
   ShowerLLHFitParamsPtr params(new ShowerLLHFitParams());
   params->maxLLH = double(maxLLH);
   frame->Put("ShowerLLHParams_"+composition_, params);

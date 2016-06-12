@@ -2,26 +2,11 @@
 //#include <icetray/load_project.h>
 #include <ShowerLLH/ShowerLLHFitParams.h>
 #include <ShowerLLH/ShowerLLH.h>
-#include <ShowerLLH/TimeScramble.h>
 #include <ShowerLLH/GridSearch.h>
 #include <ShowerLLH/converter/ShowerLLHFitParamsConverter.h>
 #include <tableio/converter/pybindings.h>
 
 namespace bp = boost::python;
-
-void
-register_TimeScramble()
-{
-  bp::class_<TimeScramble, TimeScramblePtr, 
-                  bp::bases<I3FrameObject> >("TimeScramble")
-    .def("cscramble", &TimeScramble::cscramble,
-        (bp::arg("self"), bp::arg("mjdList"), bp::arg("thetaList"),
-        bp::arg("phiList"), bp::arg("nSide"), bp::arg("nBGResample"),
-        //bp::arg("BGMap"), bp::arg("method") ),
-        bp::arg("method") ),
-        "Scramble a given map in time")
-  ;
-}
 
 void
 register_GridSearch()
