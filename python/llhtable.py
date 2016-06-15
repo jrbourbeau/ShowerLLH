@@ -7,11 +7,15 @@
 # Created By    : James Bourbeau
 #=========================================================================
 
+import os
+import re
 import numpy as np
 
 from llhbins import LLHBins
 from icecube import icetray, phys_services
 from icecube import dataclasses as dc
+
+import support_functions.simFunctions as simFunctions
 
 
 class LLHTable(object):
@@ -23,7 +27,7 @@ class LLHTable(object):
     def __str__(self):
         return 'bintype = {}, count_table = {}'.format(self.bins.bintype, self.count_table)
 
-    def normalize_tables(self, filelist, outfile):
+    def make_LLH_tables(self, filelist, outfile):
         ''' Converts the count tables provided in filelist to log-probability tables '''
         if isinstance(filelist, basestring):
             filelist = [filelist]
@@ -49,12 +53,13 @@ class LLHTable(object):
                 norm[comp][idx] = np.log10(
                     cumulative[comp][idx] / sum(cumulative[comp][idx]))
 
-        ''' Write LLH table to file '''
-        if self.bins is None or self.llhtable is None:
+        # Write LLH table to file
+        if self.bins is None:
             raise SystemExit(
-                'Either the LLH bins or LLH table are of type NoneType. Please specify them...')
+                'LLH bins are of type NoneType. Please specify them...')
         else:
-            np.save(outfile, {'bins': self.bins, 'llhtables': self.llhtable})
+            np.save(outfile, {'bintype': self.bins.bintype,
+                              'llhtables': norm})
             print('{} saved.'.format(outfile))
 
     def save_tables(self, outfile='~/LLHTable.npy'):
@@ -119,7 +124,8 @@ class FillHist(icetray.I3Module):
         if len(self.tankpositions) < 5:  # or some arbitrary low number
             raise ValueError("Not enough tanks found!")
 
-        self.hist = np.zeros([len(self.bins[i]) - 1 for i in self.bins])
+        self.hist = np.zeros(
+            [len(self.bins[i]) - 1 for i in self.bins if self.bins[i] is not None])
         self.snowheight = np.array(self.snowheight)
         self.PushFrame(frame)
 
@@ -182,8 +188,9 @@ class FillHist(icetray.I3Module):
         unbinned_vals['C'] = VEMcharges[goodcharges]
 
         # Bin shower
-        all_unbinned = [unbinned_vals[k] for k in self.bins]
-        all_edges = [self.bins[i] for i in self.bins]
+        all_unbinned = [unbinned_vals[k]
+                        for k in self.bins if self.bins[k] is not None]
+        all_edges = [self.bins[i] for i in self.bins if self.bins[i] is not None]
         event_hist = np.histogramdd(all_unbinned, all_edges)[0]
         self.hist += event_hist
         self.PushFrame(frame)
@@ -200,9 +207,8 @@ class FillHist(icetray.I3Module):
         return
 
 
-def merge_counts_table(filelist, outfile):
+def merge_counts_tables(filelist, outfile):
     merged_counts_table = {}
-    print('\nMerging {}...'.format(os.path.basename(sim)))
     for i, file in enumerate(filelist):
         counts_table = np.load(file)
         counts_table = counts_table.item()
@@ -213,7 +219,3 @@ def merge_counts_table(filelist, outfile):
         merged_counts_table['counts'] += counts_table['counts']
 
     np.save(outfile, merged_counts_table)
-
-if __name__ == "__main__":
-    a = LLHTable(bintype='standard')
-    print('a = {}'.format(a))

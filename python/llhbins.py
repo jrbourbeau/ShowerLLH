@@ -37,6 +37,8 @@ class LLHBins(object):
         # Snow bins in meters
         bins['S'] = np.array([-1, .001, .5, .85])
         bins['S'] = np.append(bins['S'], np.inf)
+        if bintype in ['nosnow']:
+            bins['S'] = None
         # Distance bins in meters
         bins['D'] = np.append(np.arange(0,600,10), np.arange(600,1051,50))
         if bintype in ['logdist']:
@@ -49,7 +51,3 @@ class LLHBins(object):
         bins['C'] = np.append(bins['C'], np.inf)
 
         return bins
-
-if __name__ == "__main__":
-    b = LLHBins(bintype='logdist')
-    print('b = {}'.format(b))

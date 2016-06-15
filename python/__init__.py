@@ -6,4 +6,5 @@ del icetray
 
 from module import GridLLH
 from llhbins import LLHBins
-from llhtable import LLHTable, FillHist, merge_counts_table
+from llhtable import LLHTable, FillHist, merge_counts_tables
+from llhgrid import LLHGrid

@@ -9,21 +9,22 @@ from SupportFunctions import b2e
 import numpy as np
 import time
 
+
 class GridLLH(icetray.I3ConditionalModule):
 
     def __init__(self, context):
         icetray.I3ConditionalModule.__init__(self, context)
         self.AddOutBox('OutBox')
-        self.AddParameter('DirectionFit', 'I3Particle to get direction from', \
-                'ShowerPlane')
-        self.AddParameter('RecoPulses', 'Pulse series for reconstruction', \
-                'IceTopHLCVEMPulses')
-        self.AddParameter('LLHTables','Input LLH tables', 0)
-        self.AddParameter('binDict','Input bins', 0)
-        self.AddParameter('grids','Input grids for LLH method', 0)
-        self.AddParameter('runMode','Run in flexible(recommended) or static',
-                'flexible')
-        self.AddParameter('saturated','Turn on saturation of DOMs', False)
+        self.AddParameter('DirectionFit', 'I3Particle to get direction from',
+                          'ShowerPlane')
+        self.AddParameter('RecoPulses', 'Pulse series for reconstruction',
+                          'IceTopHLCVEMPulses')
+        self.AddParameter('LLHTables', 'Input LLH tables', 0)
+        self.AddParameter('binDict', 'Input bins', 0)
+        self.AddParameter('grids', 'Input grids for LLH method', 0)
+        self.AddParameter('runMode', 'Run in flexible(recommended) or static',
+                          'flexible')
+        self.AddParameter('saturated', 'Turn on saturation of DOMs', False)
 
     def Configure(self):
         self.DirectionFit = self.GetParameter('DirectionFit')
@@ -79,8 +80,8 @@ class GridLLH(icetray.I3ConditionalModule):
                     index += 1
 
         ntanks = len(self.tankpositions)
-        if ntanks < 5: # or some arbitrary low number
-            print 'Warning: not enough tanks found in run'
+        if ntanks < 5:  # or some arbitrary low number
+            print('Warning: not enough tanks found in run')
             self.tankCheck = False
 
         # Convert tank positions and snow heights to arrays
@@ -106,9 +107,9 @@ class GridLLH(icetray.I3ConditionalModule):
 
         # Load LLH tables
         hists = self.LLHTables
-        binNames = [self.bins[i][0] for i in sorted(self.bins)]
-        Ebins = self.bins[binNames.index('E')][1]
-        Cbins = self.bins[binNames.index('C')][1]
+        # binNames = self.bins.keys()
+        Ebins = self.bins['E']
+        Cbins = self.bins['C']
         cmax = 1.01 * Cbins[-2]
 
         # Get list of good charges
@@ -147,16 +148,16 @@ class GridLLH(icetray.I3ConditionalModule):
         unbinned_vals['C'] = VEMcharges[goodcharges]
 
         # Bin quantities in advance
-        binnedVals = [np.digitize(unbinned_vals[k], self.bins[i][1]) - 1 \
-                for i, k in enumerate(binNames)]
+        binnedVals = [np.digitize(unbinned_vals[i], self.bins[i]) - 1
+                      for i in self.bins if self.bins[i] is not None]
         # Skip this if running the static fast version
         if self.runMode == 'flexible':
             binnedVals = np.transpose(binnedVals).flatten().astype(np.int32)
 
         # Grid search function to run
         def gridLLH(grid, hist):
-            RecoMaxLLHs, argmax = self.getLLH(grid, hist, self.bins, 
-                    binnedVals, theta, phi, Tank_xyz)
+            RecoMaxLLHs, argmax = self.getLLH(grid, hist, self.bins,
+                                              binnedVals, theta, phi, Tank_xyz)
             return RecoMaxLLHs, argmax
 
         # Perform grid search for each composition
@@ -192,9 +193,9 @@ class GridLLH(icetray.I3ConditionalModule):
             #coarse_llhs = icetray.vector_double()
             #med_llhs = icetray.vector_double()
             #fine_llhs = icetray.vector_double()
-            #coarse_llhs.extend(LLHs[0])
-            #med_llhs.extend(LLHs[1])
-            #fine_llhs.extend(LLHs[2])
+            # coarse_llhs.extend(LLHs[0])
+            # med_llhs.extend(LLHs[1])
+            # fine_llhs.extend(LLHs[2])
 
             params = ShowerLLHFitParams()
             params.maxLLH = float(maxLLH)
@@ -203,11 +204,9 @@ class GridLLH(icetray.I3ConditionalModule):
             #params.fine_llhs = fine_llhs
 
             ## WRITE TO FRAME ##
-            frame['ShowerLLH_'+comp] = track
+            frame['ShowerLLH_' + comp] = track
             #frame['maxLLH_'+comp] = dc.I3Double(maxLLH)
-            frame['ShowerLLHParams_'+comp] = params
-
+            frame['ShowerLLHParams_' + comp] = params
 
         self.PushFrame(frame)
         return
-
