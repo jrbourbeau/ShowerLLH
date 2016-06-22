@@ -101,7 +101,10 @@ def getLLH_C(grid, llhTable, bins, binnedVals, theta, phi, tankxyz):
     d_idx = 3
     Dbins = np.asarray(bins['D'], dtype=np.double)
 
+    # list of maximum LLH values for each grid position
     RecoMaxLLHs = np.array([-np.inf for i in range(nG)], dtype=np.double)
+    # the corresponding energy bin that maximized the LLH
+    # for each grid position 
     argmax = np.zeros(nG, dtype=np.int32)
 
     argnames = ['grid', 'llhTable', 'binnedVals', 'theta', 'phi', 'tankxyz']
@@ -112,6 +115,8 @@ def getLLH_C(grid, llhTable, bins, binnedVals, theta, phi, tankxyz):
 
         // Starting parameters
         double Z = 1947;
+        // ex, ey, ez are the components of a unit vector that points along the 
+        // directional fit of the shower. Corresponds to self.DirectionFit
         double ex = -sin(theta) * cos(phi);
         double ey = -sin(theta) * sin(phi);
         double ez = -cos(theta);
@@ -119,11 +124,16 @@ def getLLH_C(grid, llhTable, bins, binnedVals, theta, phi, tankxyz):
         // Loop over every grid position
         for (int i=0; i<nG; i++) {
 
+            //
             // Calculate and bin closest approach distances
+            //
+            // X, Y are coordinates of the i'th grid position
             double X = grid(i,0);
             double Y = grid(i,1);
 
             for (int j=0; j<ntanks; j++) {
+                // hx, hy, hz are the components of a vector pointing from the
+                // j'th tank to the i'th grid point
                 double hx = X - tankxyz(j,0);
                 double hy = Y - tankxyz(j,1);
                 double hz = Z - tankxyz(j,2);
@@ -132,6 +142,9 @@ def getLLH_C(grid, llhTable, bins, binnedVals, theta, phi, tankxyz):
                 double y1 = tankxyz(j,1) + s*ey;
                 double z1 = tankxyz(j,2) + s*ez;
                 double dist = sqrt(pow(x1-X,2) + pow(y1-Y,2) + pow(z1-Z,2));
+                // dist is the closest approach distance of the shower 
+                // to the j'th tank. This assumes the shower core is located 
+                // at the i'th grid point. 
                 int bin = 0;
                 while (dist > Dbins(bin+1))
                     bin += 1;

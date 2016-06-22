@@ -133,15 +133,14 @@ class FillHist(icetray.I3Module):
 
         # Get shower information
         try:  # the first frame doesn't have a particle?
-            # MC = frame['I3MCTree'].primaries[0]
-            MC = frame['MCPrimary']
+            # MC = frame['MCPrimary']
+            MC = frame['I3MCTree'].primaries[0]
             VEMpulses = frame[self.recoPulses]
             if VEMpulses.__class__ == dc.I3RecoPulseSeriesMapMask:
                 VEMpulses = VEMpulses.apply(frame)
         except KeyError:
             self.PushFrame(frame)
             return
-
         # Closest approach distances
         ClosestDist = phys_services.I3Calculator.closest_approach_distance
         dists = np.array([ClosestDist(MC, xyz) for xyz in self.tankpositions])
@@ -170,6 +169,11 @@ class FillHist(icetray.I3Module):
             pe_per_vem = vemCalib.pe_per_vem / vemCalib.corr_factor
             lg_sat = sat_lg_pe / pe_per_vem
             gain = self.dom[om].dom_gain_type
+            # Note: CleanedHLCTankPulses only returns one pulse per tank. If
+            # the high-gain DOM is not saturated, then neither is the low-gain
+            # DOM. If the high-gain DOM is saturated, then the low-gain DOM
+            # pulse is returned. So we only really need to worry about
+            # low-gain DOM saturation.
             if (charge > lg_sat) and (gain == dc.I3DOMStatus.Low):
                 saturated[idx] = True
 
@@ -190,7 +194,8 @@ class FillHist(icetray.I3Module):
         # Bin shower
         all_unbinned = [unbinned_vals[k]
                         for k in self.bins if self.bins[k] is not None]
-        all_edges = [self.bins[i] for i in self.bins if self.bins[i] is not None]
+        all_edges = [self.bins[i]
+                     for i in self.bins if self.bins[i] is not None]
         event_hist = np.histogramdd(all_unbinned, all_edges)[0]
         self.hist += event_hist
         self.PushFrame(frame)
@@ -201,7 +206,6 @@ class FillHist(icetray.I3Module):
         if self.outFile:
             d = {}
             d['bintype'] = self.bintype
-            # d['bins'] = self.bins
             d['counts'] = self.hist
             np.save(self.outFile, d)
         return
