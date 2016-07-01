@@ -32,7 +32,7 @@ class LLHBins(object):
         # Zenith bins in radians (equal solid-angle bins, cutoff at 40 deg_to_rads)
         bins['Z'] = np.linspace(1, np.cos(40*deg_to_rad), 4)
         bins['Z'] = np.append(np.arccos(bins['Z']), np.pi/2)
-        if bintype in ['logdist','nozenith']:
+        if bintype in ['nozenith']:
             bins['Z'] = None
         # Snow bins in meters
         bins['S'] = np.array([-1, .001, .5, .85])
