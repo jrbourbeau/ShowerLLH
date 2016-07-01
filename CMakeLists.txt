@@ -9,14 +9,14 @@ i3_add_library(ShowerLLH
     private/ShowerLLH/ShowerLLHFitParams.cxx
 	private/ShowerLLH/converter/ShowerLLHFitParamsConverter.cxx
 
-	USE_TOOLS boost python sla gsl
+	USE_TOOLS boost python
 	USE_PROJECTS icetray dataclasses tableio
 )
 
 i3_add_pybindings(ShowerLLH
   private/pybindings/module.cxx
   private/pybindings/ShowerLLHFitParams.cxx
-  USE_TOOLS boost python sla gsl
+  USE_TOOLS boost python
   USE_PROJECTS icetray dataclasses tableio ShowerLLH
 )
 
